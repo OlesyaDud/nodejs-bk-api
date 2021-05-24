@@ -6,7 +6,9 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "NODE_ENV=production node server",
-    "dev": "nodemon server"
+    "server": "nodemon ./server.js",
+    "watch": "nodemon ./server.js",
+    "dev": "nodemon ./server.js"
   },
   "author": "OD",
   "license": "ISC",
