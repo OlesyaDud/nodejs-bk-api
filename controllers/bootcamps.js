@@ -19,14 +19,53 @@ const Bootcamp = require('../models/Bootcamp');
 //     };
 // };
 exports.getBootcamps = asyncHandler(async (req, res, next) => {
-    
+    // filtering
+    //http://localhost:5000/api/v1/bootcamp?careers[in]=Business
+    //http://localhost:5000/api/v1/bootcamp?averageCost[gte]=10000&location.city=Boston
     let query;
-    // json params as a querystr
-    let queryStr = JSON.stringify(req.query);
+
+    // making a copy of request.query
+    const reqQuery = {...req.query};
+
+    //  I do not want to match  a query as a field or fields to exclude
+    const removeFields = ['select','sort'];
+
+    // loop over removeFields and delete them from reqQuery, in this case "select"
+    // http://localhost:5000/api/v1/bootcamp?select=name
+    removeFields.forEach(param => delete reqQuery[param]);
+    // console.log(reqQuery);
+
+
+    // json params as a querystr--creating query string
+    let queryStr = JSON.stringify(reqQuery);
+
+    // creating oprators to query-"greater than" etc
     queryStr = queryStr.replace(/\b(gt|gte|lt|lte|in)\b/g,
     match => `$${match}`);
     // console.log(queryStr);
+
+    // finding resource
     query = Bootcamp.find(JSON.parse(queryStr));
+
+    // select fields
+    // http://localhost:5000/api/v1/bootcamp?select=name,description
+    // http://localhost:5000/api/v1/bootcamp?select=name,description, housing&housing=true
+    if(req.query.select) {
+        const fields = req.query.select.split(',').join(' ');
+        query = query.select(fields);
+    };
+
+    // again for multiple coma separated fields
+    // http://localhost:5000/api/v1/bootcamp?select=name,description, housing&sort=name
+    if(req.query.sort) {
+        const sortBy = req.query.sort.split(',').join(' ');
+        query = query.sort(sortBy);
+    }else {
+        query = query.sort('-createdAt')
+    };
+
+
+    // executing query
     const bootcamps = await query;
         res.status(200).json({
             success: true, 
