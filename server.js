@@ -12,6 +12,7 @@ dotenv.config({path: './config/config.env'});
 // connect to db
 connectDB();
 const bootcamps = require('./routes/bootcamps');
+const courses = require('./routes/courses');
 const app = express();
 // Body parser
 app.use(express.json());
@@ -24,6 +25,7 @@ if(process.env.NODE_ENV === "development") {
 
 // Routes mounting
 app.use('/api/v1/bootcamp/', bootcamps);
+app.use('/api/v1/courses/', courses);
 // middleware is executed in a linear order, so error handler has to be after bootcamps
 app.use(errorHandler);
 
