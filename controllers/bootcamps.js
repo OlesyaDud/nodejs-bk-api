@@ -19,8 +19,15 @@ const Bootcamp = require('../models/Bootcamp');
 //     };
 // };
 exports.getBootcamps = asyncHandler(async (req, res, next) => {
-        const bootcamps = await Bootcamp.find();
-
+    
+    let query;
+    // json params as a querystr
+    let queryStr = JSON.stringify(req.query);
+    queryStr = queryStr.replace(/\b(gt|gte|lt|lte|in)\b/g,
+    match => `$${match}`);
+    // console.log(queryStr);
+    query = Bootcamp.find(JSON.parse(queryStr));
+    const bootcamps = await query;
         res.status(200).json({
             success: true, 
             data: bootcamps, 
