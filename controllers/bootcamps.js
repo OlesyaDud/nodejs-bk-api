@@ -28,7 +28,7 @@ exports.getBootcamps = asyncHandler(async (req, res, next) => {
     const reqQuery = {...req.query};
 
     //  I do not want to match  a query as a field or fields to exclude
-    const removeFields = ['select','sort'];
+    const removeFields = ['select','sort', 'page', 'limit'];
 
     // loop over removeFields and delete them from reqQuery, in this case "select"
     // http://localhost:5000/api/v1/bootcamp?select=name
@@ -64,13 +64,47 @@ exports.getBootcamps = asyncHandler(async (req, res, next) => {
         query = query.sort('-createdAt')
     };
 
+    // pagination
+    // http://localhost:5000/api/v1/bootcamp?limit=2&select=name
+    // page 2: http://localhost:5000/api/v1/bootcamp?page=2&limit=2&select=name
+    // http://localhost:5000/api/v1/bootcamp?select=name&page=2
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 25;
+    const startIndex = (page -1) * limit;
+    const endIndex = page * limit;
+    const total = await Bootcamp.countDocuments();
+
+    query = query.skip(startIndex).limit(limit);
+
 
     // executing query
     const bootcamps = await query;
+
+    // pagination result
+    const pagination = {};
+
+    // setting next or previous page
+    // http://localhost:5000/api/v1/bootcamp?page=4
+    if(endIndex < total) {
+        pagination.next = {
+            page: page +1,
+            limit
+        }
+    };
+
+    if(startIndex > 0) {
+        pagination.prev = {
+            page: page -1,
+            limit
+        }
+    };
+
+    // response
         res.status(200).json({
             success: true, 
             data: bootcamps, 
-            count: bootcamps.length });
+            count: bootcamps.length, 
+            pagination });
     }
 );
 
