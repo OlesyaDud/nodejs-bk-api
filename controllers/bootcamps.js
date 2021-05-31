@@ -33,7 +33,8 @@ exports.getBootcamps = asyncHandler(async (req, res, next) => {
     // console.log(queryStr);
 
     // finding resource
-    query = Bootcamp.find(JSON.parse(queryStr));
+    // + reverse populate- includes all fields of courses model
+    query = Bootcamp.find(JSON.parse(queryStr)).populate('courses');
 
     // select fields
     // http://localhost:5000/api/v1/bootcamp?select=name,description
@@ -145,12 +146,15 @@ exports.updateBootcamp = asyncHandler(async (req, res, next) => {
 // @route DELETE /api/v1/bootcamps/:id
 // @access  Public
 exports.deleteBootcamp = asyncHandler(async (req, res, next) => {
-        const bootcamp = await Bootcamp.findByIdAndDelete(req.params.id);
+        const bootcamp = await Bootcamp.findById(req.params.id);
     
             if(!bootcamp) {
                 // return res.status(400).json({success: false});
                 return next(new ErrorResponse(`Bootcamp not found with the id ${req.params.id}`, 404));
             }
+
+            // will trigger middleware to remove also courses
+            bootcamp.remove();
             
         res.status(201).json({
             success: true,

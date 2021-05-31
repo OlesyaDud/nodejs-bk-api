@@ -100,8 +100,10 @@ const BootcampSchema = new mongoose.Schema(
         type: Date,
         default: Date.now
       }
-     }
-  );
+     }, {
+       toJSON: {virtuals: true},
+       toObject: {virtuals: true}
+     });
 
   // mongoose middleware - create slug from the name
   BootcampSchema.pre('save', function(next) {
@@ -127,9 +129,25 @@ const BootcampSchema = new mongoose.Schema(
 
     // do not save address in DB
     this.address = undefined;
-
     next();
+  });
+
+  // delte all courses when bootcamp is deleted
+  // in bootcamp controller remove()
+  BootcampSchema.pre('remove', async function (next) {
+    console.log(`Courses removed from bootcamp ${this._id}`)
+    await this.model('Course').deleteMany({bootcamp: this._id});
+    next();
+  });
+
+  // reverse-populate - goes to bootcamp controller, doing populate()
+  BootcampSchema.virtual('courses', {
+    ref: "Course",
+    localField: '_id',
+    foreignField: 'bootcamp',
+    justOne: false
   })
+
 
   module.exports = mongoose.model('Bootcamp', BootcampSchema);
   
