@@ -9,29 +9,23 @@ const Bootcamp = require('../models/Bootcamp');
 // @route GET /api/v1/courses/:bootcampId/courses
 // @access  Public
 exports.getCourses = asyncHandler(async (req, res, next)=> {
-    let query;
 
     // if this route is hit: /api/v1/courses/:bootcampId/courses
     if(req.params.bootcampId) {
-        query = Course.find({bootcamp: req.params.bootcampId});
-    } else {
-        // if this route is hit: /api/v1/courses
-        // populate() populates table with another table data
-        // query = Course.find().populate('bootcamp');
-        query = Course.find().populate({
-            path: 'bootcamp',
-            select: 'name description'
-        });
-    };
+        const courses = await Course.find({bootcamp: req.params.bootcampId});
 
-    const courses = await query;
+        return res.status(200).json({
+            success: true,
+            count: courses.length,
+            data: courses
+        })
 
-    // sending response
-    res.status(200).json({
-        success: true,
-        count: courses.length,
-        data: courses
-    });
+        } else {
+            // can implement pagination, sorting etc...
+            // http://localhost:5000/api/v1/courses?select=title
+            // http://localhost:5000/api/v1/courses?page=2&limit=2
+            res.status(200).json(res.commonResults);
+        }
 });
 
 
