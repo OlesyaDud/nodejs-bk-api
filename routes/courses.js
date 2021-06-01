@@ -13,16 +13,18 @@ const Courses = require('../models/Course');
 // object mergeParams:true is needed for the route coming from ex bootcamp into courses
 const router = express.Router({mergeParams: true});
 
+const {protect} = require('../middleware/auth');
+
 router.route('/')
 .get(commonResults(Courses, {
       path: 'bootcamp',
       select: 'name description'
 }), getCourses)
-.post(addCourse);
+.post(protect, addCourse);
 
 router.route('/:id')
 .get(getCourse)
-.put(updateCourse)
-.delete(deleteCourse);
+.put(protect, updateCourse)
+.delete(protect, deleteCourse);
 
 module.exports = router;

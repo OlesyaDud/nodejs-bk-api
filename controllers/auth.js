@@ -65,3 +65,15 @@ const sendTokenResponse = (user, statusCode, res) => {
     .cookie('token', token, options)
     .json({success: true, token})
 };
+
+// @desc  get current logged user
+// @route POST /api/v1/auth/login
+// @access  Private
+exports.getLoggedUser = asyncHandler(async(req, res, next) => {
+    const user = await User.findById(req.user.id);
+
+    res.status(200).json({
+        success: true,
+        data: user
+    })
+})
