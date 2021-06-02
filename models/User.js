@@ -1,3 +1,5 @@
+// crypto-generates token and hashes it
+const crypto = require('crypto');
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
@@ -38,6 +40,9 @@ const UserSchema = new mongoose.Schema({
 
 // encrypt password
 UserSchema.pre('save', async function(next) {
+  if(!this.isModified('password')) {
+    next();
+  }
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
 });
@@ -53,7 +58,24 @@ UserSchema.methods.getSignedJwt = function() {
 UserSchema.methods.matchPassword = async function(enteredPassword) {
   // await for password in db,  compare plain password with user's password hashed in db
   return await bcrypt.compare(enteredPassword, this.password);
-}
+};
 
+// generate and hash password token
+// since is called on the user itself not on the model --its a methods, instead of statics,hence, doing methods 
+UserSchema.methods.getResetPasswordToken = function() {
+  // generate token
+  const resetToken= crypto.randomBytes(20).toString('hex');
+
+  // hash token and set to resetPasswordToken field
+  this.resetPasswordToken = crypto
+  .createHash('sha256')
+  .update(resetToken)
+  .digest('hex');
+
+  // set expire to 10 minutes
+  this.resetPasswordExpire = Date.now() + 10 * 60 * 1000;
+
+  return resetToken;
+};
 
 module.exports = mongoose.model('User', UserSchema);
