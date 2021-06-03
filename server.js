@@ -6,6 +6,7 @@ const mongoSanitize = require('express-mongo-sanitize');
 const helmet = require('helmet');
 const xss = require('xss-clean');
 const hpp = require('hpp');
+const cors = require('cors');
 
 const dotenv = require('dotenv');
 const colors = require('colors');
@@ -49,6 +50,8 @@ app.use(helmet());
 app.use(xss());
 //Prevent http param pollution
 app.use(hpp()); 
+// cors
+app.use(cors());
 
 // Set static folder
 app.use(express.static(path.join(__dirname, 'public')));
