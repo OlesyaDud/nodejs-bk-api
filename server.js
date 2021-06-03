@@ -5,6 +5,7 @@ const cookieParser = require('cookie-parser');
 const mongoSanitize = require('express-mongo-sanitize');
 const helmet = require('helmet');
 const xss = require('xss-clean');
+const hpp = require('hpp');
 
 const dotenv = require('dotenv');
 const colors = require('colors');
@@ -46,6 +47,8 @@ app.use(mongoSanitize());
 app.use(helmet());
 // Prevent XSS attacks
 app.use(xss());
+//Prevent http param pollution
+app.use(hpp()); 
 
 // Set static folder
 app.use(express.static(path.join(__dirname, 'public')));
